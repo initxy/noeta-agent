@@ -1,0 +1,41 @@
+name: Bug report
+description: Report a defect in noeta-agent
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for filing a bug. For **security-sensitive** reports, do not use
+        this form — follow [SECURITY.md](../../SECURITY.md) instead.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What did you observe, and what did you expect instead?
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Minimal steps. Note the execution tier (`local` / `sandbox`) and whether you were on the offline mock or a real gateway.
+      placeholder: |
+        1. make run
+        2. create a `local` project against …
+        3. send "…"
+    validations:
+      required: true
+  - type: textarea
+    id: env
+    attributes:
+      label: Environment
+      description: Output of `python --version`, `node --version`, `uv --version`, the `noeta-agent` version, and your OS.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / trace
+      description: Relevant backend log lines, or the `/trace/<session>` details if the turn ran. Scrub any credentials.
+    validations:
+      required: false

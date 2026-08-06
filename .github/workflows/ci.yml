@@ -1,0 +1,90 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  check:
+    name: check — pytest + web + import-linter
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Build the web frontend BEFORE `uv sync`: the noeta-agent wheel
+      # force-includes web/dist (a gitignored Vite artifact), so the editable
+      # build triggered by sync fails if dist/ does not yet exist.
+      - name: Build web frontend
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Sync (kernel + dev group)
+        run: uv sync --frozen
+
+      # `make check` is the single gate; CI runs exactly what a developer runs
+      # locally (pytest, web typecheck + unit tests, import-linter).
+      - name: check
+        run: make check
+
+  e2e-web:
+    name: web e2e (Playwright against the platform in mock mode)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Build web frontend
+        working-directory: web
+        run: |
+          npm ci
+          npm run build
+
+      - name: Sync
+        run: uv sync --frozen
+
+      # Cache the Chromium download keyed on the pinned @playwright/test version
+      # (the e2e suite is its own npm package under web/e2e).
+      - name: Resolve Playwright version
+        id: playwright-version
+        run: >
+          echo "version=$(node -e
+          "console.log(require('./web/e2e/package-lock.json').packages['node_modules/@playwright/test'].version)")"
+          >> "$GITHUB_OUTPUT"
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright-version.outputs.version }}
+
+      - name: Web e2e (the webServer block boots python -m noeta.agent, mock mode)
+        working-directory: web/e2e
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test

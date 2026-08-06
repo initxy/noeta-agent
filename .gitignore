@@ -1,0 +1,15 @@
+# Runtime data (application DB, engine event log, per-session workspaces,
+# shared knowledge/skills trees). Never committed.
+data/
+
+.venv/
+.env
+__pycache__/
+*.pyc
+
+# JS build tooling scratch (root-level vite cache, deps).
+node_modules/
+
+# Local model catalogue: carries deployment-specific model ids and endpoints.
+# Kept out of git so a checkout does not leak internal names.
+models.json

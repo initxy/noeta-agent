@@ -1,0 +1,123 @@
+/**
+ * The wire vocabulary.
+ *
+ * Two halves, deliberately kept apart: `wire.ts` is the REST surface — the
+ * request and response bodies of `/api/v1` — and `ui-events.ts` is the flat
+ * UI-event vocabulary the session SSE stream carries. They meet only where a
+ * REST type is literally reused in a frame (a user message's images).
+ *
+ * Nothing here derives, renders or interprets. The step from a wire frame to
+ * something renderable belongs to `app/fold`.
+ */
+
+export type {
+  AcceptedTask,
+  AgentConfig,
+  AnswerRequest,
+  AnswerValue,
+  ApiErrorBody,
+  ArtifactResolvePayload,
+  ArtifactResolveRequest,
+  Connector,
+  ConnectorInput,
+  ConnectorPatch,
+  ConnectorTransport,
+  ConnectorsPayload,
+  CreateProjectRequest,
+  CreateSessionRequest,
+  ExecutionTier,
+  FileTextPayload,
+  FilesPayload,
+  ForkRequest,
+  HealthPayload,
+  ImageAttachment,
+  InterruptRequest,
+  Model,
+  ModelsPayload,
+  PreviewPayload,
+  Project,
+  ProjectsPayload,
+  RawEnvelope,
+  RawEventsPayload,
+  ResolvedArtifact,
+  SendMessageRequest,
+  SessionDetail,
+  SessionRow,
+  SessionStatus,
+  SessionsPayload,
+  TaskStream,
+  TraceCursor,
+  UpdateProjectRequest,
+  UpdateSessionRequest,
+  PreviewPanel,
+  ValidationErrorEntry,
+  WorkspaceFile,
+  WriteFileRequest,
+} from './wire'
+
+export { ARTIFACT_CONFIDENCE } from './artifacts'
+export type {
+  ArtifactCandidate,
+  ArtifactConfidence,
+  ArtifactKind,
+  ArtifactPreview,
+  ArtifactTarget,
+} from './artifacts'
+
+export type {
+  AssistantTextEvent,
+  DurableScope,
+  OptionSpec,
+  CompactionData,
+  CompactionEvent,
+  DeltaData,
+  DeltaEvent,
+  DeltaKind,
+  ErrorData,
+  ErrorEvent,
+  ImageRef,
+  LlmRetryData,
+  LlmRetryEvent,
+  MemoryOp,
+  MemoryOpData,
+  MemoryOpEvent,
+  QuestionAnsweredData,
+  QuestionAnsweredEvent,
+  QuestionData,
+  QuestionEvent,
+  QuestionSpec,
+  RawUIEvent,
+  RecallEvent,
+  ReplayDoneEvent,
+  SessionMetaData,
+  SessionMetaEvent,
+  SkillActivatedData,
+  SkillActivatedEvent,
+  SubtaskFinishedData,
+  SubtaskFinishedEvent,
+  SubtaskOutcome,
+  SubtaskStartedData,
+  SubtaskStartedEvent,
+  TaskScope,
+  TextData,
+  ThinkingEvent,
+  Todo,
+  TodoStatus,
+  TodoUpdateData,
+  TodoUpdateEvent,
+  ToolCallData,
+  ToolCallEvent,
+  ToolResultData,
+  ToolResultEvent,
+  TurnFinishedData,
+  TurnFinishedEvent,
+  TurnStartedEvent,
+  TurnStatus,
+  UIEvent,
+  UIEventFrame,
+  UIEventType,
+  UserMessageData,
+  UserMessageEvent,
+} from './ui-events'
+
+export { UI_EVENT_TYPES, asUIEvent, isUIEventType } from './ui-events'
