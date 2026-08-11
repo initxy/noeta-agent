@@ -39,14 +39,16 @@ def _write_models(path, models: list[dict]) -> None:
 
 
 def test_models_returns_the_configured_models(http):
+    """The catalog reaches the wire in file order, with the `default` flag.
+
+    The ids are `models.json.example`'s — the tracked catalog the suite is
+    pinned to (see `make_settings`). Reading the developer's own `models.json`
+    here would be asserting against a gitignored file: absent in CI, and
+    spelled differently on every deployment."""
     payload = http.get("/api/v1/models").json()
 
     assert payload["provider"] == "mock"
-    assert [m["id"] for m in payload["models"]] == [
-        "model_hub/es1_orange_o48",
-        "model_api/experimental_0723",
-        "auto_model/alwaysday1_max",
-    ]
+    assert [m["id"] for m in payload["models"]] == ["gpt-4o", "o3", "gpt-4o-mini"]
     assert [m["default"] for m in payload["models"]] == [True, False, False]
 
 
@@ -144,13 +146,10 @@ def test_unknown_model_and_unknown_effort_are_rejected(make_settings):
     reaches the provider."""
     settings = make_settings()
 
-    assert (
-        validate_model(settings, "model_hub/es1_orange_o48", "high").id
-        == "model_hub/es1_orange_o48"
-    )
+    assert validate_model(settings, "gpt-4o", "high").id == "gpt-4o"
 
     with pytest.raises(ModelValidationError, match="unknown model"):
         validate_model(settings, "no-such-model")
 
     with pytest.raises(ModelValidationError, match="unknown effort"):
-        validate_model(settings, "model_hub/es1_orange_o48", "supreme")
+        validate_model(settings, "gpt-4o", "supreme")

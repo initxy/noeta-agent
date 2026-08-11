@@ -126,8 +126,13 @@ def make_settings(tmp_path: Path) -> Callable[..., Settings]:
       present.
     - `data_dir` under `tmp_path` — every test gets an empty data tree, so the
       suite passes on a second consecutive run, not only on a clean checkout.
-    - `models_config` pinned to the checkout's `models.json` rather than the
-      relative default, which would resolve against pytest's working directory.
+    - `models_config` pinned to the checkout's **`models.json.example`**. Not
+      the relative default, which would resolve against pytest's working
+      directory — and deliberately not the developer's own `models.json`,
+      which is gitignored (deployment-specific ids), so a suite that read it
+      would assert against a file CI does not have and every machine spells
+      differently. The example is tracked, neutral, and shipped, so pinning it
+      also keeps it honest: a broken example now fails the suite.
     - `memory_consolidation=False` — the first turn boundary is immediately due
       (no debounce marker exists yet), so leaving it on spawns a background
       curation task in *every* test.
@@ -142,7 +147,7 @@ def make_settings(tmp_path: Path) -> Callable[..., Settings]:
             "secondary_llm_api_key": "",
             "data_dir": str(tmp_path / "data"),
             "projects_dir": str(tmp_path / "projects"),
-            "models_config": str(REPO_ROOT / "models.json"),
+            "models_config": str(REPO_ROOT / "models.json.example"),
             "memory_consolidation": False,
         }
         baseline.update(overrides)

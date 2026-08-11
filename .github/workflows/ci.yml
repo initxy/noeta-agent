@@ -19,10 +19,15 @@ jobs:
           enable-cache: true
           python-version: "3.12"
 
+      # 24, not 20: jsdom (the vitest environment) declares
+      # `node: ^22.22.2 || ^24.15.0 || >=26`, so Node 20 installs with an
+      # EBADENGINE warning and is a runtime coin flip. This is also what the
+      # development machines run, which is the point — `make check` is meant
+      # to mean the same thing here as it does locally.
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
       # Build the web frontend BEFORE `uv sync`: the noeta-agent wheel
       # force-includes web/dist (a gitignored Vite artifact), so the editable
@@ -53,10 +58,11 @@ jobs:
           enable-cache: true
           python-version: "3.12"
 
+      # 24 for the reason the check job states.
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
       - name: Build web frontend
         working-directory: web
