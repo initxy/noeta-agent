@@ -91,6 +91,13 @@ one record the rewrite carried over unchanged.** Token streaming is an ephemeral
 projection; deltas ride a product-layer side channel, carry no SSE `id:`, and
 the EventLog stays the only durable truth.
 
+**Entry points:**
+[operator-cli](operator-cli.md) — **live.** There is one operator CLI,
+`noeta run`, the headless one-shot twin of the `python -m noeta.agent` server.
+Why the earlier "no operator CLI" absolute was reversed, why it delegates to the
+server's own provider and run recipe rather than a parallel copy, and why it
+strips `ask_user_question` and stays one-shot.
+
 **Superseded — the multi-user platform:**
 [server-platform-product](server-platform-product.md) — **superseded in its
 product form** by the three records above. It made the product a multi-user

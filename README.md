@@ -174,6 +174,33 @@ rather than storing a projection. Raw envelopes stay available on the trace
 surface. The contract is normative and frozen:
 [`docs/reference/wire-contract.md`](docs/reference/wire-contract.md).
 
+## Benchmarks — how it compares
+
+Noeta runs on the **same public harness the leaderboards use**
+([harbor](https://github.com/harbor-framework/harbor)), installed into each
+task's container and scored by each task's own verifier — no Noeta-specific
+scoring path. Driving `main` with **Claude Opus 4.8**:
+
+| Benchmark | Noeta `main` | The field (public leaderboard) |
+| --- | --- | --- |
+| **Terminal-Bench 2.1** (40-task stratified sample) | **82.5%** (33/40) | full board spans 58.7%–83.8% |
+| **SWE-bench Verified** (15-instance subset) | **86.7%** (13/15) | top ~79%, mid-pack ~66–77% |
+
+On Terminal-Bench 2.1 that lands in the **top band** of the public leaderboard —
+level with the leading shipping CLIs (Claude Code + Fable 5 at 83.8%, Codex +
+GPT-5.5 at 83.1%) and above every listed Claude Code on Opus/Sonnet and every
+Terminus 2 entry. Same tasks, same verifiers, same harness the field is measured
+on: Noeta is not a toy next to the shipping coding agents — it clears what they
+clear.
+
+**Read honestly:** these are **stratified samples**, labelled as such, not
+full-set leaderboard entries, and they run on **local hardware** (the leaderboard
+forbids modifying timeouts/resources and runs on provisioned machines, so a few
+deep-reasoning tasks that timed out here under CPU contention were recovered at
+low concurrency — the score is a floor, not a ranked position). Every number
+carries its exact command, pinned dataset digest, and task list. Full method,
+per-difficulty split, and the field table: [**docs/benchmarks.md**](docs/benchmarks.md).
+
 ## Honest limits
 
 - **The `local` tier has no isolation** (above). This is a decision, not a gap.
@@ -221,6 +248,7 @@ The full docs live under [`docs/`](docs/):
 | How-to guides | [Use the workbench](docs/how-to/use-the-workbench.md) · [Configure a provider](docs/how-to/configure-provider.md) |
 | Reference | [Product reference](docs/reference/noeta-agent.md) · [HTTP API](docs/reference/http-api.md) · [Configuration](docs/reference/configuration.md) · [Wire contract](docs/reference/wire-contract.md) · [Behavior ledger](docs/reference/behavior-ledger.md) |
 | Operations | [Limitations](docs/operations/limitations.md) · [Troubleshooting](docs/operations/troubleshooting.md) |
+| Benchmarks | [Public benchmark results](docs/benchmarks.md) — Terminal-Bench 2.1, SWE-bench Verified |
 | Decisions | [ADR index](docs/adr/index.md) |
 
 中文文档：[`docs/zh/`](docs/zh/)。

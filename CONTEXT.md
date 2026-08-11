@@ -46,13 +46,27 @@ kept **off** the public surface on purpose (the surface exposes only the
 only shrink, and an exemption is declared in the same change that adds its
 adapter — never ahead of it.
 
-## The entry point and the wire
+## The entry points and the wire
 
-There is **no operator CLI**. The only entrypoint is `python -m noeta.agent` —
+There are **two** entry points, and they are twins over one engine, not two
+product surfaces. The interactive one is `python -m noeta.agent` —
 zero-argument, env-only (`./.env` + environment variables; see
 `noeta/agent/config.py`) — which boots the backend (FastAPI + uvicorn) and
 serves the SPA build from `web/dist`. With every key empty it runs fully
 offline against the mock provider: no credentials, no Docker, no login screen.
+
+The headless one is the `noeta` console script: `noeta run <prompt>
+--workspace <dir>` drives a **single** task to a terminal `TaskCompleted` and
+prints one JSON object (`answer` / `task_id` / `model` / `usage`) to stdout,
+then exits — no server, no SSE, no human at an approval prompt. It reuses the
+server's own provider (`build_provider`) and the same run recipe `build_client`
+pins (`permission_mode="bypassPermissions"`, `write_mode="apply"`, instructions
+enabled), differing only in that it strips `ask_user_question` by default (an
+unattended run must not park on a question; `--allow-questions` restores it)
+and keeps storage in-memory unless `--storage-path` opts into a durable record.
+Multi-turn, fork, and rewind stay behind the server and the SDK `Client`; the
+CLI is one-shot on purpose. It is the non-interactive driver a benchmark
+harness invokes.
 
 The frontend-backend wire is the **product contract**, and it is normative:
 [`docs/reference/wire-contract.md`](docs/reference/wire-contract.md)

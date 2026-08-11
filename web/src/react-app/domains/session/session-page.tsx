@@ -13,7 +13,11 @@
  * get them would be the first crack in D9.
  *
  * `session === null` is the "project open, nothing selected" surface, not an
- * error: the composer is live, and the first message creates the session.
+ * error: the composer is live, and the first message creates the session. While
+ * that surface is still blank — no session id and not a frame in the
+ * conversation — the composer is centred, like a fresh chat, rather than docked
+ * at the bottom over an empty transcript. The first send navigates to the new
+ * session's URL, so this centred state is only ever the untouched first screen.
  */
 
 import { useEffect } from 'react'
@@ -71,6 +75,30 @@ export function SessionPage({
   const title = streamTitle ?? session?.title ?? 'New session'
   const status = CONNECTION_LABEL[connection] ?? null
   const todos = useLatestTodos(sessionId)
+
+  // The untouched first screen: no session yet, and not a frame has landed. The
+  // send navigates away the moment it fires, so this can only ever be the blank
+  // opener — which is why the composer is centred here and docked everywhere
+  // else.
+  const blank = sessionId === null && conversation.items.length === 0 && conversation.delta === null
+
+  if (blank) {
+    return (
+      <>
+        <PaneHeader>
+          <span className="min-w-0 flex-1 truncate font-medium text-ink">{title}</span>
+        </PaneHeader>
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center">
+          <div className="w-full">
+            <p className="mb-2 px-4 text-center text-lg font-medium text-ink-2">
+              What would you like to do?
+            </p>
+            <Composer projectId={projectId} sessionId={sessionId} />
+          </div>
+        </div>
+      </>
+    )
+  }
 
   return (
     <>

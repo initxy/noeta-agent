@@ -316,8 +316,8 @@ requires-dist = [
     { name = "agent-sandbox", specifier = ">=0.0.30,<0.1.0" },
     { name = "fastapi", specifier = ">=0.115" },
     { name = "httpx", specifier = ">=0.27" },
-    { name = "noeta-runtime", specifier = ">=0.6.4" },
-    { name = "noeta-sdk", specifier = ">=0.6.4" },
+    { name = "noeta-runtime", specifier = ">=0.6.10" },
+    { name = "noeta-sdk", specifier = ">=0.6.10" },
     { name = "pydantic-settings", specifier = ">=2.4" },
     { name = "python-multipart", specifier = ">=0.0.9" },
     { name = "uvicorn", extras = ["standard"], specifier = ">=0.30" },
@@ -332,25 +332,25 @@ dev = [
 
 [[package]]
 name = "noeta-runtime"
-version = "0.6.4"
+version = "0.6.10"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/2e/97/dd48d89f4dbb5fefa943404d53f1c4a9f6b3a5a15244e902331bad6da412/noeta_runtime-0.6.4.tar.gz", hash = "sha256:90df7a8f314091bc1d09d5fb6756ac779c28d80cceae49c0177d5e6497ad584c", size = 354731, upload-time = "2026-08-06T08:41:20.367Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/47/4c/b2f99de781002a555dcc052ac2745d884f302d87aa03ae8e5997f0605004/noeta_runtime-0.6.10.tar.gz", hash = "sha256:6de39227a804386d1734c4d54ec7456dca963f6e1497f8144ee3c74e7d8624bf", size = 356078, upload-time = "2026-08-08T16:12:25.707Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/27/b6/df54391122d3a22c1ce8e75970cc60e7a4b84aa213633af142ab53e4ca2d/noeta_runtime-0.6.4-py3-none-any.whl", hash = "sha256:84c0347030adac720ba3c0905a6b70b6e536d0fafed1cadf1c7eac98a3ef38d1", size = 411340, upload-time = "2026-08-06T08:41:19.207Z" },
+    { url = "https://files.pythonhosted.org/packages/62/70/e57861d6263f315f179e9d8b4a13b2e2e693137514dde607cf1af1df156b/noeta_runtime-0.6.10-py3-none-any.whl", hash = "sha256:10ce798069fb0efea55236487579196acefcfba92e439e51ed039ea1483db6d1", size = 412766, upload-time = "2026-08-08T16:12:24.307Z" },
 ]
 
 [[package]]
 name = "noeta-sdk"
-version = "0.6.4"
+version = "0.6.10"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "httpx" },
     { name = "noeta-runtime" },
     { name = "psycopg", extra = ["binary"] },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/10/a6/07388cf4903a6f50ba4b673fb0cb5eac3cfb4a3fe5c00825184d36bbb62e/noeta_sdk-0.6.4.tar.gz", hash = "sha256:9240e2f02653032107649511881706b7ea81752daf0db2663ba6d99e9095596b", size = 444945, upload-time = "2026-08-06T08:41:23.295Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/9f/ae/3e831fce90f728ad154702ec31a8f00c4093ce3642ba9f59adcf5660246d/noeta_sdk-0.6.10.tar.gz", hash = "sha256:00bd6e19be31972a41ad233f907a34e3d4c4ef4876fc92923199a693b341b865", size = 451922, upload-time = "2026-08-08T16:12:27.714Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/8d/01/5417538ece042ea5253bddb84b521e2b780a6dc6c6f44cf0f792a17d496f/noeta_sdk-0.6.4-py3-none-any.whl", hash = "sha256:58915655846d1e405cc541a3141194eeee0ec9b352193a80d94168619c656cc7", size = 544236, upload-time = "2026-08-06T08:41:22.007Z" },
+    { url = "https://files.pythonhosted.org/packages/ef/5e/60f81cc05ec5e694b39af130e48607ce30feaa9b3341a1d0c7e9a9c5232d/noeta_sdk-0.6.10-py3-none-any.whl", hash = "sha256:7d3b9977f326465b6660acf3528aa993d69e20a55d5f02a6083c53f5038c90a3", size = 551920, upload-time = "2026-08-08T16:12:26.532Z" },
 ]
 
 [[package]]

@@ -13,9 +13,12 @@
  *   cannot end up shouting twice about the same turn.
  * - **Opening a session reads it.** `visit` runs on the click, *before* the
  *   navigation, so the mark clears whether or not the route resolves.
- * - **Creating a session is one click.** No dialog, no title prompt: a session
- *   is created empty and titled by its first turn, so anything asked up front
- *   is a question the product can answer itself.
+ * - **"New session" opens the blank surface, it does not create.** The button
+ *   navigates to the session-less URL, where the composer is live and the first
+ *   message creates the session (titled by that turn). Creating an empty session
+ *   up front would leave a titleless, streamless row behind every time the user
+ *   changed their mind, so the session is made only once there is something to
+ *   say.
  *
  * Pin and archive are optimistic: the row moves on click and the server is
  * reconciled afterwards, by version rather than by arrival
@@ -27,7 +30,6 @@ import { useNavigate } from 'react-router-dom'
 import { Archive, ArchiveRestore, ChevronRight, Pin, PinOff, Plus, Trash2 } from 'lucide-react'
 import { projectSessionRoute } from '@/app/routes'
 import { cn } from '@/react-app/design-system'
-import { useCreateSession } from '@/react-app/domains/session/queries/session-queries'
 import { SessionDotMatrix, SessionStateSlot } from './sidebar/activity-indicators'
 import { sidebarSectionStyle } from './sidebar/lane-metrics'
 import { rowSignals, rowStateLabel } from './sidebar/row-signals'
@@ -48,30 +50,20 @@ import type { SessionOrganisationView } from './sidebar/use-session-organisation
  * label lane (44px) and its `+` on the glyph lane — the same two rails every
  * session title below it sits on. A one-off button with its own padding is the
  * one thing that reads as crooked next to a list that is not.
+ *
+ * It navigates to the session-less URL rather than creating anything: the blank
+ * surface's composer creates the session on the first message (see the module
+ * docstring), so the button is a plain link disguised as a row.
  */
 export function NewSessionButton({ projectId }: { projectId: string }) {
   const navigate = useNavigate()
-  const create = useCreateSession()
 
   return (
-    <>
-      <SidebarButtonRow
-        glyph={<Plus className="size-3.5" aria-hidden="true" />}
-        label={create.isPending ? 'Creating…' : 'New session'}
-        disabled={create.isPending}
-        onClick={() =>
-          create.mutate(
-            { projectId },
-            { onSuccess: (session) => navigate(projectSessionRoute(projectId, session.id)) },
-          )
-        }
-      />
-      {create.error ? (
-        <p role="alert" className="px-3 pt-1 text-xs text-danger">
-          {create.error.message}
-        </p>
-      ) : null}
-    </>
+    <SidebarButtonRow
+      glyph={<Plus className="size-3.5" aria-hidden="true" />}
+      label="New session"
+      onClick={() => navigate(projectSessionRoute(projectId))}
+    />
   )
 }
 
@@ -415,8 +407,9 @@ export function SessionRail({
         </SidebarSection>
       ) : null}
       <section className="py-2" style={sidebarSectionStyle()}>
-        {/* One click, at the top of the list where it is found without reading
-            the list first. */}
+        {/* At the top of the list, where it is found without reading the list
+            first. It opens the blank surface; the composer there creates the
+            session. */}
         <NewSessionButton projectId={projectId} />
         <div className="mt-0.5 flex flex-col gap-0.5">
           <SessionsBody

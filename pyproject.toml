@@ -23,8 +23,8 @@ dependencies = [
     "agent-sandbox>=0.0.30,<0.1.0",
     "fastapi>=0.115",
     "httpx>=0.27",
-    "noeta-sdk>=0.6.4",
-    "noeta-runtime>=0.6.4",
+    "noeta-sdk>=0.6.10",
+    "noeta-runtime>=0.6.10",
     "pydantic-settings>=2.4",
     "python-multipart>=0.0.9",
     "uvicorn[standard]>=0.30",
@@ -36,6 +36,12 @@ Repository = "https://github.com/initxy/noeta-agent"
 Issues = "https://github.com/initxy/noeta-agent/issues"
 Changelog = "https://github.com/initxy/noeta-agent/blob/main/CHANGELOG.md"
 "Noeta runtime + SDK" = "https://github.com/initxy/noeta"
+
+# The one operator CLI. `noeta run <prompt>` is the headless twin of
+# `python -m noeta.agent` (the interactive server): one prompt, one working
+# directory, one autonomous run. See noeta/agent/run_cli.py.
+[project.scripts]
+noeta = "noeta.agent.run_cli:main"
 
 [dependency-groups]
 dev = [
