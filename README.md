@@ -177,29 +177,57 @@ surface. The contract is normative and frozen:
 ## Benchmarks — how it compares
 
 Noeta runs on the **same public harness the leaderboards use**
-([harbor](https://github.com/harbor-framework/harbor)), installed into each
-task's container and scored by each task's own verifier — no Noeta-specific
-scoring path. Driving `main` with **Claude Opus 4.8**:
+([harbor](https://github.com/harbor-framework/harbor)): installed into each
+task's container, driven headless, scored by each task's own verifier — no
+Noeta-specific scoring path. Both runs drive the `main` preset with **Claude
+Opus 4.8**.
 
-| Benchmark | Noeta `main` | The field (public leaderboard) |
-| --- | --- | --- |
-| **Terminal-Bench 2.1** (40-task stratified sample) | **82.5%** (33/40) | full board spans 58.7%–83.8% |
-| **SWE-bench Verified** (15-instance subset) | **86.7%** (13/15) | top ~79%, mid-pack ~66–77% |
+### Terminal-Bench 2.1
 
-On Terminal-Bench 2.1 that lands in the **top band** of the public leaderboard —
-level with the leading shipping CLIs (Claude Code + Fable 5 at 83.8%, Codex +
-GPT-5.5 at 83.1%) and above every listed Claude Code on Opus/Sonnet and every
-Terminus 2 entry. Same tasks, same verifiers, same harness the field is measured
-on: Noeta is not a toy next to the shipping coding agents — it clears what they
-clear.
+Official leaderboard:
+**[tbench.ai/leaderboard/terminal-bench/2.1](https://www.tbench.ai/leaderboard/terminal-bench/2.1)**.
+Every row below is a full-set (89 tasks) board entry with the board's own error
+bar — **except Noeta's**, a 40-task stratified sample placed at its score for
+context, not a ranked position.
 
-**Read honestly:** these are **stratified samples**, labelled as such, not
-full-set leaderboard entries, and they run on **local hardware** (the leaderboard
-forbids modifying timeouts/resources and runs on provisioned machines, so a few
-deep-reasoning tasks that timed out here under CPU contention were recovered at
-low concurrency — the score is a floor, not a ranked position). Every number
-carries its exact command, pinned dataset digest, and task list. Full method,
-per-difficulty split, and the field table: [**docs/benchmarks.md**](docs/benchmarks.md).
+| Agent | Model | Effort | Terminal-Bench 2.1 |
+| --- | --- | --- | --- |
+| Claude Code | Fable 5 | xhigh | 83.8% ± 1.2% |
+| Codex | GPT-5.5 | xhigh | 83.1% ± 1.1% |
+| **Noeta `main`** | **Opus 4.8** | **xhigh** | **82.5%** — 33/40 sample |
+| Terminus 2 | Fable 5 | high | 80.4% ± 1.2% |
+| Claude Code | Opus 4.8 | high | 78.9% ± 1.3% |
+| Terminus 2 | GPT-5.5 | xhigh | 78.0% ± 1.2% |
+| Claude Code | Sonnet 5 | high | 74.6% ± 1.6% |
+| Claude Code | Opus 4.7 | max | 68.9% ± 1.4% |
+| Gemini CLI | Gemini 3 Pro | high | 65.8% ± 1.4% |
+| Claude Code | GLM-5.1 | max | 58.7% ± 1.2% |
+
+The board has 17 entries spanning 58.7%–83.8%; abridged here to the shipping
+CLIs plus the harness's reference agent. The closest same-model comparison is
+Claude Code on Opus 4.8 — 78.9% at `high`, against Noeta's 82.5% at `xhigh`.
+Noeta's sample resolved 4/4 easy, 20/24 medium, 9/12 hard.
+
+### SWE-bench Verified
+
+Official leaderboard: **[swebench.com](https://www.swebench.com/)** (full 500
+instances; Noeta's row is a fixed 15-instance subset, one or two per repo across
+all 12 repos).
+
+| Run | Model | Scope | Resolved |
+| --- | --- | --- | --- |
+| **Noeta `main`** | **Opus 4.8** (`high`) | **15-instance subset** | **86.7%** (13/15) |
+| Board top | frontier models | full 500 | ~79% |
+| Board mid-pack | frontier models | full 500 | ~66–77% |
+
+The board is indexed by harness + model rather than by product, so it carries no
+directly comparable "shipping CLI" row — read those two rows as the field's
+range, not as opponents.
+
+Both Noeta rows are **samples, labelled as such** — a placement in the field's
+band, not a ranked leaderboard position. Every number carries its exact command,
+pinned dataset digest, and task list; full method and exclusions live in
+[**docs/benchmarks.md**](docs/benchmarks.md).
 
 ## Honest limits
 

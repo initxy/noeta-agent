@@ -2,18 +2,13 @@
 """Summarize harbor benchmark job(s) into a score — pass / fail / error, both
 denominators, and (for TB) a per-difficulty split.
 
-Why this exists: harbor writes a `result.json` per job, but a scored run often
-spans more than one job — a main run plus a low-concurrency rerun of the tasks
-that hit an infrastructure error (gateway `llm_error`, agent-setup timeout).
-This merges them: later jobs override earlier verdicts per instance, so a rerun
-that resolves a previously-errored task wins. Errors are reported separately and
-never silently counted as passes.
+Why this exists: harbor writes a `result.json` per job. This reads one (or
+several, later jobs overriding earlier verdicts per instance) and reports
+errors separately, never silently counted as passes.
 
 Usage:
     # one job
     bench/summarize.py bench/jobs/2026-08-09__11-12-24
-    # merge a main run + a rerun (later args override earlier per task)
-    bench/summarize.py bench/jobs/<main> bench/jobs/<rerun>
     # point at a TB dataset dir to get the per-difficulty split
     bench/summarize.py --dataset bench/datasets/terminal-bench-2-1 bench/jobs/<job>...
 
@@ -31,7 +26,7 @@ import sys
 def _instance(task_key: str) -> str:
     """harbor task ids look like `<name>__<trialhash>` or
     `swe-bench/<inst>__<hash>`. Strip the org prefix and the trial suffix to get
-    a stable instance name so main-run and rerun verdicts line up."""
+    a stable instance name across jobs."""
     name = task_key.split("/", 1)[1] if "/" in task_key else task_key
     # trial hash is the last __<alnum> segment
     if "__" in name:

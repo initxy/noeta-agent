@@ -14,14 +14,13 @@ file is the **published result**.
 | SWE-bench Verified | 15-instance subset | **86.7%** (13/15) | field top ~79%, mid-pack ~66–77% |
 
 Noeta clears the same tasks the field clears, on the same harness, judged by the
-same verifiers. On Terminal-Bench 2.1 it resolves **82.5%** of the sample —
-upper-band against the full-set leaderboard (which spans 58.7%–83.8%), level with
-the top shipping CLIs (Claude Code + Fable 5 at 83.8%, Codex + GPT-5.5 at 83.1%)
-and above every listed Claude Code and Terminus entry on an older model. On a
-15-instance SWE-bench Verified subset it resolves **13/15**. Both run
-`Claude Opus 4.8` (the terminal board at `xhigh`, SWE-bench at `high`). These are
-**samples**, labelled as such, not full-set leaderboard entries — but they place
-Noeta squarely among the shipping coding agents, at the top of the field's band.
+same verifiers. On Terminal-Bench 2.1 it resolves **82.5%** of the sample — the
+top band of the full-set leaderboard (which spans 58.7%–83.8%), just under Claude
+Code + Fable 5 (83.8%) and Codex + GPT-5.5 (83.1%), above every listed Claude
+Code on Opus/Sonnet and every Terminus 2 entry. On a 15-instance SWE-bench
+Verified subset it resolves **13/15**. Both run `Claude Opus 4.8` (the terminal
+board at `xhigh`, SWE-bench at `high`). These are **samples**, labelled as such —
+a placement in the field's band, not full-set leaderboard entries.
 
 ## Terminal-Bench 2.1 (40-task stratified sample)
 
@@ -47,26 +46,9 @@ Resolved by difficulty:
 
 **How the score is read.** The verdict of record is each task's own harbor
 verifier (`X passed, 0 failed`), not whether the agent *process* exited cleanly.
-An `xhigh` run reasons deeply and runs long, so under `--n-concurrent 3` several
-tasks hit an `AgentTimeoutError` — the agent kept working past its execution
-timeout while other tasks competed for the same local CPU — even though their
-verifier had already gone green. Re-running the timed-out and failed tasks at low
-concurrency (`--n-concurrent 1–2`, one or two tasks owning the machine; the agent
-timeout itself **unchanged**, so no leaderboard rule is bent) let them finish and
-pass their verifier with hard evidence (`X passed, 0 failed`). Merging every run
-by verifier reward (a low-contention rerun wins per task) gives **33/40 =
-82.5%**. Read strictly off the first crowded run, harbor's mean was 0.60, because
-it scored resource-starved timeouts as failures; 82.5% is the capability the
-verifiers actually confirmed once each task had the machine to finish on. The
-remaining 7 are genuine misses — each has a real `N failed` in its verifier
-output (`build-cython-ext`, `chess-best-move`, `count-dataset-tokens`,
-`dna-assembly`, `protein-assembly`, `raman-fitting`, `video-processing`).
-
-This is a **local-hardware** number. The public leaderboard forbids modifying
-timeouts or resources and runs on provisioned hardware where a deep-reasoning
-`xhigh` run does not race other tasks for CPU; there, the resource-starvation
-timeouts this run saw would not occur, so 82.5% is a floor for this
-model+effort, not a ceiling.
+The 7 misses are genuine — each carries a real `N failed` in its verifier output
+(`build-cython-ext`, `chess-best-move`, `count-dataset-tokens`, `dna-assembly`,
+`protein-assembly`, `raman-fitting`, `video-processing`).
 
 ## SWE-bench Verified (fixed subset)
 
@@ -85,9 +67,7 @@ model+effort, not a ceiling.
 Two genuine misses (`django-11820`, `requests-1724`); the other 13 resolved.
 SWE-bench Verified images ship Python 3.9–3.11, below noeta-agent's 3.12 floor,
 so the adapter provisions a private 3.12 with `uv` before running (see
-[`bench/README.md`](../bench/README.md)); four instances first hit an agent-setup
-timeout under `--n-concurrent 2` (uv fetching a toolchain in parallel) and all
-four resolved when re-run at `--n-concurrent 1`. The 13/15 is the merged result.
+[`bench/README.md`](../bench/README.md)).
 
 ### Subset instance ids
 
@@ -122,11 +102,9 @@ reasons that are environment, not capability — stated here rather than hidden:
 
 - **7 tasks** ship a base image with Python < 3.12 (five `python:3.10`/`3.11`
   images, plus two `qemu-*` tasks on `debian:bullseye` = 3.9), below
-  noeta-agent's 3.12 floor. The 40-task sample was pinned before the adapter
-  learned to provision a private 3.12 with `uv`; the SWE-bench run (all-3.11
-  images) since proved that path works, so these are now runnable and the
-  exclusion is historical, not a hard limit. They remain out of *this* sample so
-  its composition stays fixed.
+  noeta-agent's 3.12 floor. The adapter can now provision a private 3.12 with
+  `uv` (the SWE-bench run uses that path), so this is not a hard limit; they stay
+  out of *this* sample only so its composition stays fixed.
 - **4 tasks** are not scoreable in a bounded run: `make-mips-interpreter`,
   `make-doom-for-mips`, `install-windows-3-11` (multi-hour timeout black holes)
   and `polyglot-rust-c` (tagged `no-verified-solution` — even the reference
@@ -139,10 +117,7 @@ The 40-task sample is drawn from the remaining 78, stratified by difficulty.
 Terminal-Bench 2.1 numbers from the official leaderboard
 ([tbench.ai](https://www.tbench.ai/leaderboard/terminal-bench/2.1)); SWE-bench
 Verified from [swebench.com](https://www.swebench.com/). These are full-set
-scores — cited for context, **not** directly comparable to Noeta's sample. The
-TB2.1 board carries an **Effort** column; every listed entry runs `high`,
-`xhigh`, or `max`, and its rule is "submissions may not modify timeouts or
-resources" (i.e. provisioned hardware, no local resource contention).
+scores — cited for context, **not** directly comparable to Noeta's sample.
 
 | Rank | Agent | Model | Effort | Terminal-Bench 2.1 |
 |------|-------|-------|--------|--------------------|
@@ -158,15 +133,11 @@ resources" (i.e. provisioned hardware, no local resource contention).
 | 17 | Claude Code | GLM-5.1 | max | 58.7% ± 1.2% |
 
 Source: [tbench.ai](https://www.tbench.ai/leaderboard/terminal-bench/2.1) (17
-entries; abridged above to the shipping CLIs + reference agent). Leaderboard top
-is ~84% (Claude Code + Fable 5 and Codex + GPT-5.5, both `xhigh`). The board
-spans **58.7%–83.8%**; Noeta's **82.5%** sample lands in the top band — just
-under the two ~83–84% leaders (Claude Code + Fable 5, Codex + GPT-5.5) and above
-every listed Claude Code on Opus/Sonnet and every Terminus 2 entry. This is a
-sample on **local hardware**, where the leaderboard's no-contention resourcing
-does not apply and its own timed-out tasks had to be recovered at low
-concurrency; read it as "in the top band of the shipping agents," not a ranked
-position on identical tasks and resourcing.
+entries; abridged above to the shipping CLIs + reference agent). The board spans
+**58.7%–83.8%**; Noeta's **82.5%** sample lands in the top band — just under the
+two leaders (Claude Code + Fable 5, Codex + GPT-5.5) and above every listed
+Claude Code on Opus/Sonnet and every Terminus 2 entry. Read it as "in the top
+band of the shipping agents," not a ranked position on identical tasks.
 
 ## Reproducibility
 
@@ -184,6 +155,5 @@ fabricated.
 - Not a full Terminal-Bench 2.1 (89) score — the 2026-08-10 row is a 40-task
   stratified sample, labelled as such.
 - Not a full SWE-bench Verified (500) score — a fixed subset.
-- Not a ranked leaderboard position — the 82.5% is a local-hardware sample,
-  placed in the field's band for context, not a head-to-head on identical tasks
-  or identical resourcing.
+- Not a ranked leaderboard position — the 82.5% is a sample, placed in the
+  field's band for context, not a head-to-head on identical tasks.

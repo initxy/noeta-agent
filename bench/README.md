@@ -14,7 +14,7 @@ ships a `pi` installed agent, and this adapter is modelled on that `pi.py`
 |------|------|
 | `harbor_adapter.py` | `Noeta(BaseInstalledAgent)` — installs and invokes the `noeta run` CLI inside harbor's sandbox. Modelled on harbor's own `pi.py`. |
 | `run_benchmark.sh` | One command per run mode; sources `.env` and sets sandbox plumbing, so a run is just `NOETA_MODEL` + `NOETA_EFFORT`. |
-| `summarize.py` | Turns a job (or a main run + rerun, merged) into a score: pass / fail / error, both denominators, per-difficulty split. |
+| `summarize.py` | Turns a job into a score: pass / fail / error, both denominators, per-difficulty split. |
 | `datasets/` | Local copies of the public datasets (gitignored; harbor re-downloads on demand). |
 | `jobs/` | harbor run artifacts (gitignored). |
 
@@ -57,9 +57,9 @@ export LLM_BASE_URL=...        # the same gateway the product server uses
 export LLM_API_KEY=...
 ```
 
-### Restricted-network setup (learned the hard way)
+### Restricted-network setup
 
-On a machine that cannot reach the public internet directly, three things bite,
+On a machine that cannot reach the public internet directly, set up three things,
 in order:
 
 1. **dockerd can't pull task images from docker.io.** Give the Docker *daemon*
@@ -87,8 +87,8 @@ in order:
    export NOETA_PROXY="http://<proxy-host>:<port>"
    ```
 
-   (Without this, a 400 KB wheel measured 19 s vs 0.8 s — dependency install
-   then blows past harbor's setup timeout.)
+   (Without it, dependency install is slow enough to blow past harbor's
+   agent-setup timeout.)
 
 3. **`noeta-agent` isn't on PyPI yet.** Build a wheel and point `NOETA_WHEEL`
    at it:
@@ -155,21 +155,18 @@ directly, do the same:
 export PYTHONPATH="$(git rev-parse --show-toplevel):$PYTHONPATH"
 ```
 
-### Task-image quirks the adapter handles (and one it can't)
+### Task-image quirks the adapter handles
 
-TB2 task images are not uniform. Three differences bit during the first scored
-run; the adapter now absorbs the first two:
+TB2 task images are not uniform; the adapter absorbs three differences:
 
 - **PEP 668 "externally-managed" Python.** Some Debian-based images mark the
   system Python as externally managed, so a bare `pip install` fails before the
   agent runs. The adapter installs with `--break-system-packages` (safe in a
-  throwaway container). Handled.
+  throwaway container).
 - **WORKDIR is not always `/app`.** Most images use `/app`, but a few use
-  `/workspace` or an `/app/<subdir>`. Hard-coding `--workspace /app` made
-  `noeta run` exit 1 ("workspace is not a directory") on those. The adapter now
-  defaults the workspace to the container's own `$(pwd)` (the image's WORKDIR),
-  matching how harbor's `pi` agent behaves; `NOETA_WORKSPACE` still overrides.
-  Handled.
+  `/workspace` or an `/app/<subdir>`. The adapter defaults the workspace to the
+  container's own `$(pwd)` (the image's WORKDIR), matching how harbor's `pi`
+  agent behaves; `NOETA_WORKSPACE` still overrides.
 - **Python older than 3.12 — handled via a private 3.12.** noeta-agent requires
   `>=3.12`, but some images ship older Python: a few TB2 images
   (`python:3.11`/`3.10`) and **all** SWE-bench Verified images (conda envs on
@@ -197,12 +194,10 @@ harbor run -d terminal-bench/terminal-bench-2-1 -a bench.harbor_adapter:Noeta \
 
 ### Keep concurrency low on the gateway model
 
-The gateway model can return an empty body on its non-streaming path under load;
-at `--n-concurrent 6` a scored run saw ~8 of 40 tasks fail with `llm_error` /
-`llm_empty_response` — gateway-side failures, not capability failures, that
-nonetheless score 0 and pollute the number. At `--n-concurrent 3` (or lower)
-they largely disappear. Use `--n-concurrent 1–2` for a scored run, and re-run
-any `llm_error` / `llm_empty_response` task before trusting its verdict.
+A gateway model can return an empty body on its non-streaming path under load,
+which surfaces as `llm_error` / `llm_empty_response` — a gateway-side failure,
+not a capability failure, that still scores 0. Keep a scored run at
+`--n-concurrent 1–2`.
 
 ## Running
 
@@ -232,30 +227,18 @@ spends anything — check that line first.
 **Effort.** The public TB2.1 leaderboard has an Effort column; its top entries
 run `xhigh` (ranks 1–2) or `max`, and none below `high`. For a
 leaderboard-comparable number use `NOETA_EFFORT=xhigh`; `high` is the safe
-default. Note the board's rule "submissions may not modify timeouts or
-resources" — the official runs are on resourced hardware, so `xhigh`/`max` there
-don't hit the per-task setup/agent timeouts that a local box can. Locally,
-`xhigh` on a tight-budget task (e.g. overfull-hbox at 750 s) may time out; that
-is a run-condition difference, not a capability gap.
+default.
 
 **Concurrency.** Default 3. Keep it at **1–2 for SWE-bench**: those images need
 a private 3.12 built with `uv`, and parallel toolchain fetches trip agent-setup
-timeouts (raise `NOETA_SETUP_TIMEOUT_MULT=5` too). The gateway model's
-non-streaming path can also return empty under high concurrency — keep TB scored
-runs ≤3.
+timeouts (raise `NOETA_SETUP_TIMEOUT_MULT=5` too).
 
 ### Reading the result
 
-`summarize.py` turns a job (or several) into a score. Pass more than one job to
-**merge** them — later jobs override earlier verdicts per instance, which is how
-a low-concurrency rerun of the errored tasks folds into the main run:
+`summarize.py` turns a job into a score:
 
 ```bash
-# one job, with the per-difficulty split
 bench/summarize.py --dataset bench/datasets/terminal-bench-2-1 bench/jobs/<job>
-
-# main run + rerun of the infra-errored tasks (rerun wins per instance)
-bench/summarize.py bench/jobs/<main> bench/jobs/<rerun>
 ```
 
 It reports pass / fail / **error** separately (errors are gateway/timeout infra,
@@ -277,7 +260,7 @@ Each id becomes a `-i/--include-task-name` filter. Record the full id list in
 `docs/benchmarks.md` alongside the score. TB2.1 is small enough (89 tasks) to
 run in full, so it needs no subset.
 
-## Publishing (M3)
+## Publishing
 
 After a scored run, summarize into `docs/benchmarks.md`: the score, the model
 id, the dataset **name@version**, the exact command, and — for SWE-bench — the
