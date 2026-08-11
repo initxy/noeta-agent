@@ -594,14 +594,17 @@ class AgentHost:
         what makes this safe to call on a resting conversation: on an idle one
         an armed mark would sit there and swallow the user's next message.
 
-        Raises `TaskAlreadyTerminalError` on a task that is already dead."""
+        Raises `TaskAlreadyTerminalError` on a task that is already dead, and
+        `UnknownTaskError` on an id the engine has no stream for — the marker
+        is written with the engine's `system_emit`, which would otherwise mint
+        that stream as a side effect and leave a body no fold can read."""
         self._client.interrupt(task_id)
 
     def cancel(self, task_id: str) -> None:
         """Kill the conversation. Terminal, and not resumable.
 
         `interrupt` is what a Stop button wants; this is what deleting a
-        session wants."""
+        session wants. Refuses the same two shapes `interrupt` does."""
         self._client.cancel(task_id)
 
     def fork(

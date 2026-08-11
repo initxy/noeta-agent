@@ -297,11 +297,14 @@ async def interrupt(request: Request, session_id: str, body: wire.InterruptBody)
     running** — a 202 here means "the stop is recorded", never "the agent has
     stopped", and no copy above this layer may promise otherwise.
 
-    Two refusals, both conflicts rather than bad requests:
+    Three refusals:
 
     - **409** on a terminal stream (`TaskAlreadyTerminalError`) — `cancel`
       already ended it, and there is no turn left to halt.
     - **409** on a session that has never been messaged: nothing to stop.
+    - **404 `unknown_task`** when the bound stream is one the engine ledger
+      does not hold — the two databases disagreeing, refused by the engine
+      before the marker is written rather than minting an unreadable task.
 
     Safe on an idle conversation, and that is a property of the engine worth
     naming because the alternative is silent: the interrupt registry is marked

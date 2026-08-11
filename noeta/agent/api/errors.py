@@ -38,6 +38,7 @@ from noeta.sdk import (
     NotForkableError,
     NotResumableError,
     TaskAlreadyTerminalError,
+    UnknownTaskError,
 )
 
 logger = logging.getLogger(__name__)
@@ -79,6 +80,13 @@ _MAPPING: tuple[tuple[type[Exception], int, str], ...] = (
     (store_errors.DuplicateTaskStreamError, 409, "duplicate_task_stream"),
     # -- host ----------------------------------------------------------------
     (UnknownTaskStreamError, 404, "unknown_task_stream"),
+    # The engine refusing a lifecycle verb whose `task_id` names no stream it
+    # has ever seen. Reachable only when the two storages disagree — the app
+    # db still binds a stream the engine ledger no longer holds — and a
+    # missing resource is a 404, the same answer `unknown_task_stream` gives
+    # for the sibling case the store itself can see. Named here rather than
+    # left to the `CodedError` fallback below, which would call it a 409.
+    (UnknownTaskError, 404, "unknown_task"),
     (NoTaskStreamError, 409, "no_task_stream"),
     (NotRewindableError, 409, "not_rewindable"),
     (InvalidPathError, 400, "invalid_path"),

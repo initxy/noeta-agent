@@ -36,6 +36,19 @@ publish a tag whose version has no dated section here.
   `409 not_rewindable`). Distinct from `fork` ("edit & retry"), which keeps
   both branches and touches no files.
 
+### Changed — a lifecycle verb on a stream the engine never saw is a 404
+
+- Bumped `noeta-runtime` / `noeta-sdk` to **0.6.11** (was 0.6.10). The runtime
+  now refuses `cancel` / `interrupt` / `close` / `reopen` on a `task_id` that
+  names no live stream, instead of minting an unreadable one as a side effect
+  of writing the marker. Reachable only when the two databases disagree —
+  `app.db` still binds a stream `noeta.db` no longer holds (a restored backup,
+  a half-swapped data dir) — and previously that wrote a task whose first event
+  was `TaskCancelled`, which no fold can read.
+- The refusal reaches the client as **`404 unknown_task`**, alongside the
+  existing `404 unknown_task_stream`; without the mapping it would arrive as a
+  generic 409.
+
 ### Changed — Stop lands promptly
 
 - Bumped `noeta-runtime` / `noeta-sdk` to **0.6.3** (was 0.6.2). Pressing Stop

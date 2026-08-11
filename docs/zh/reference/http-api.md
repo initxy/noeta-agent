@@ -32,7 +32,7 @@
 | 状态码 | 实际会遇到的 code |
 | --- | --- |
 | 400 | `invalid_path`、`invalid_mode`、`invalid_image`、`invalid_cursor`、`write_failed` |
-| 404 | `unknown_project`、`unknown_session`、`unknown_task_stream`、`unknown_file`、`unknown_content`、`no_preview`、`unknown_endpoint` |
+| 404 | `unknown_project`、`unknown_session`、`unknown_task_stream`、`unknown_task`、`unknown_file`、`unknown_content`、`no_preview`、`unknown_endpoint` |
 | 409 | `session_busy`、`duplicate_directory`、`duplicate_alias`、`no_task_stream`、`not_forkable`、`not_rewindable`、`not_resumable`、`task_terminal`、`file_conflict` |
 | 422 | `invalid_directory`、`invalid_model`、`model_not_allowed`、`empty_message`、`invalid_answer`、`file_too_large`、`mcp_config` |
 | 503 | `engine_unavailable` |

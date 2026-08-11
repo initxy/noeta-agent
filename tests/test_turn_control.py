@@ -39,6 +39,7 @@ from tests.test_api_flow import (  # noqa: F401 - fixtures are used by name
     text_provider,
     types_of,
 )
+from tests.test_fork import bind_stream
 
 NEXT_GOAL_HANDLE = "noeta-code-next-goal"
 
@@ -321,6 +322,35 @@ def test_interrupt_cannot_reach_another_session_s_stream(api: Api):
 
     assert refused.status_code == 404
     assert api.error(refused)["code"] == "unknown_task_stream"
+
+
+def test_a_stream_the_engine_never_saw_is_404_not_a_minted_task(api: Api):
+    """The two databases can disagree — app.db still binds a stream the engine
+    ledger no longer holds (a restored backup, a half-swapped data dir) —
+    and the containment check cannot see it, because the binding row is
+    exactly what it reads.
+
+    What must not happen is the write going through: `cancel` records its
+    marker with the engine's `system_emit`, which appends to whatever id it is
+    handed and *creates* the stream as a side effect, leaving a task whose
+    first event is `TaskCancelled` and which no fold can ever read. The engine
+    refuses instead, and the refusal reaches the client as a missing resource
+    rather than a conflict — the same answer the sibling case gets."""
+    project, session = api.open_session()
+    bind_stream(api, session["id"], "task-that-never-existed")
+
+    refused = api.http.post(
+        f"/api/v1/sessions/{session['id']}/cancel",
+        json={"task_id": "task-that-never-existed"},
+    )
+
+    assert refused.status_code == 404
+    assert api.error(refused)["code"] == "unknown_task"
+    # And the refusal came *before* any write: the ledger still holds nothing
+    # for that id, which is the whole reason the engine checks.
+    trace = api.http.get(f"/api/v1/trace/sessions/{session['id']}/raw-events")
+    assert trace.status_code == 200
+    assert trace.json()["events"] == []
 
 
 # ---------------------------------------------------------------------------
