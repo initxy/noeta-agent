@@ -1,0 +1,84 @@
+# Publish the noeta-agent wheel to PyPI when a ``v*`` tag is pushed.
+#
+# Auth is PyPI Trusted Publishing (OIDC) — NO API token is stored anywhere.
+#
+# One-time PyPI setup — pypi.org -> Publishing -> "Add a pending publisher"
+# for project noeta-agent, with Owner=initxy, Repository=noeta-agent,
+# Workflow=release.yml, Environment = pypi-agent (must match the
+# ``environment:`` key below exactly).
+#
+# Release procedure: docs/releasing.md (changelog, version + lower bounds,
+# tag). The build job gates on a dated CHANGELOG section; the publish job is
+# gated on the tag version, so a tag whose noeta-agent version was not bumped
+# skips cleanly instead of failing on a duplicate upload.
+
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch: {}   # manual re-run from the Actions tab
+
+jobs:
+  # Build once. The noeta-agent wheel force-includes web/dist, so the frontend
+  # must be built before packaging. Wheel only — the sdist can't reach web/dist.
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Changelog gate — the tagged version must have a dated section
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if ! grep -Eq "^## \[${VERSION}\] - [0-9]{4}-[0-9]{2}-[0-9]{2}$" CHANGELOG.md; then
+            echo "::error::CHANGELOG.md has no dated '## [${VERSION}] - YYYY-MM-DD' section; see docs/releasing.md"
+            exit 1
+          fi
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build frontend
+        run: make web
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+      - name: Build the wheel
+        run: |
+          rm -f dist/*.whl dist/*.tar.gz
+          uv build --wheel
+          ls -l dist/
+      - name: Upload dist artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  # The publish job runs only when the build produced a wheel whose version
+  # equals the tag — so a tag that did not bump noeta-agent (e.g. a
+  # runtime-only or sdk-only release in the sibling repo) skips cleanly instead
+  # of failing on a duplicate upload.
+  publish-agent:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi-agent
+    permissions:
+      id-token: write   # required: mint the short-lived PyPI OIDC token
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { name: dist, path: dist/ }
+      - name: Gate on the tag version
+        id: gate
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          if ls dist/noeta_agent-"${VERSION}"-*.whl >/dev/null 2>&1; then
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::no noeta_agent-${VERSION} wheel — not part of this release; skipping"
+          fi
+      - uses: astral-sh/setup-uv@v6
+        if: steps.gate.outputs.publish == 'true'
+      - if: steps.gate.outputs.publish == 'true'
+        run: uv publish --trusted-publishing always dist/noeta_agent-*

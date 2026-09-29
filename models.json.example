@@ -1,0 +1,30 @@
+{
+  "models": [
+    {
+      "id": "gpt-4o",
+      "label": "GPT-4o",
+      "default": true,
+      "efforts": ["low", "medium", "high"],
+      "default_effort": "medium",
+      "context_window": 128000,
+      "max_output_tokens": 16384,
+      "supports_vision": true
+    },
+    {
+      "id": "o3",
+      "label": "o3 (reasoning)",
+      "efforts": ["low", "medium", "high", "xhigh", "max"],
+      "default_effort": "high",
+      "context_window": 200000,
+      "max_output_tokens": 100000,
+      "is_reasoning": true
+    },
+    {
+      "id": "gpt-4o-mini",
+      "label": "GPT-4o mini",
+      "efforts": ["low", "medium", "high"],
+      "default_effort": "medium",
+      "gateway": "secondary"
+    }
+  ]
+}
